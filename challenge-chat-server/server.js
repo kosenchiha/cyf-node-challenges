@@ -11,28 +11,39 @@ app.post("/messages", (req, res) => {
     from: req.body.from,
     text: req.body.text
   };
+
   // 400 bad request
-  if (!req.body.from || req.body.from < 3) {
-    res.status(400).send("Name is required and should be minimum 3 characters");
-    return;
-  }
-  if (!req.body.text) {
-    res.status(400).send("Please, write a message");
-    return;
-  }
+  if (!req.body.from || req.body.from < 3)
+    return res
+      .status(400)
+      .send("Name is required and should be minimum 3 characters");
+  if (!req.body.text) return res.status(400).send("Please, write a message");
   messages.push(message);
+
   res.send(message);
 });
 
 app.get("/messages", (req, res) => {
-  console.log("im working");
   res.send(messages);
 });
 
 app.get("/messages/:id", (req, res) => {
   const message = messages.find(mes => mes.id === parseInt(req.params.id));
   if (!message)
-    res.status(404).send("Sorry! User with the given ID was not found");
+    return res
+      .status(404)
+      .send("Sorry! Message with the given ID was not found");
+  res.send(message);
+});
+
+app.delete("/messages/:id", (req, res) => {
+  const message = messages.find(mes => mes.id === parseInt(req.params.id));
+  if (!message)
+    return res
+      .status(404)
+      .send("Sorry! Message with the given ID was not found");
+  const index = messages.indexOf(message);
+  messages.splice(index, 1);
   res.send(message);
 });
 
