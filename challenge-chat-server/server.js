@@ -10,7 +10,7 @@ app.post("/messages", (req, res) => {
     id: messages.length + 1,
     from: req.body.from,
     text: req.body.text,
-    date: new Date().toLocaleString()
+    timeSent: new Date().toLocaleString()
   };
 
   // 400 bad request
