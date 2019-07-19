@@ -9,7 +9,8 @@ app.post("/messages", (req, res) => {
   const message = {
     id: messages.length + 1,
     from: req.body.from,
-    text: req.body.text
+    text: req.body.text,
+    date: new Date().toLocaleString()
   };
 
   // 400 bad request
@@ -19,12 +20,30 @@ app.post("/messages", (req, res) => {
       .send("Name is required and should be minimum 3 characters");
   if (!req.body.text) return res.status(400).send("Please, write a message");
   messages.push(message);
-
   res.send(message);
 });
 
 app.get("/messages", (req, res) => {
-  res.send(messages);
+  if (req.query.text) {
+    const messagesContainText = messages.filter(mes =>
+      mes.text.includes(req.query.text)
+    );
+    res.send(messagesContainText);
+  } else {
+    res.send(messages);
+  }
+});
+
+app.get("/messages/search", (req, res) => {
+  const messagesContainText = messages.filter(mes =>
+    mes.text.includes(req.query.text)
+  );
+  res.send(messagesContainText);
+});
+
+app.get("/messages/latest", (req, res) => {
+  const topTenMessages = messages.slice(0, 10);
+  res.send(topTenMessages);
 });
 
 app.get("/messages/:id", (req, res) => {
@@ -35,6 +54,8 @@ app.get("/messages/:id", (req, res) => {
       .send("Sorry! Message with the given ID was not found");
   res.send(message);
 });
+
+//app.put("/messages")
 
 app.delete("/messages/:id", (req, res) => {
   const message = messages.find(mes => mes.id === parseInt(req.params.id));
