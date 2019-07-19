@@ -4,6 +4,21 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.json());
 
 const messages = [];
+function messageNotFound(message, res) {
+  if (!message)
+    return res
+      .status(404)
+      .send("Sorry! Message with the given ID was not found");
+}
+function validateName(req, res) {
+  if (!req.body.from || req.body.from.length < 3)
+    return res
+      .status(400)
+      .send("Name is required and should be minimum 3 characters");
+}
+function validateMessage(req, res) {
+  if (!req.body.text) return res.status(400).send("Please, write a message");
+}
 
 app.post("/messages", (req, res) => {
   const message = {
@@ -12,13 +27,9 @@ app.post("/messages", (req, res) => {
     text: req.body.text,
     timeSent: new Date().toLocaleString()
   };
-
   // 400 bad request
-  if (!req.body.from || req.body.from < 3)
-    return res
-      .status(400)
-      .send("Name is required and should be minimum 3 characters");
-  if (!req.body.text) return res.status(400).send("Please, write a message");
+  validateName(req, res);
+  validateMessage(req, res);
   messages.push(message);
   res.send(message);
 });
@@ -48,21 +59,23 @@ app.get("/messages/latest", (req, res) => {
 
 app.get("/messages/:id", (req, res) => {
   const message = messages.find(mes => mes.id === parseInt(req.params.id));
-  if (!message)
-    return res
-      .status(404)
-      .send("Sorry! Message with the given ID was not found");
+  messageNotFound(message, res);
   res.send(message);
 });
 
-//app.put("/messages")
+app.put("/messages/:id", (req, res) => {
+  const message = messages.find(mes => mes.id === parseInt(req.params.id));
+  messageNotFound(message, res);
+  validateName(req, res);
+  validateMessage(req, res);
+  message.from = req.body.from;
+  message.text = req.body.text;
+  res.send(message);
+});
 
 app.delete("/messages/:id", (req, res) => {
   const message = messages.find(mes => mes.id === parseInt(req.params.id));
-  if (!message)
-    return res
-      .status(404)
-      .send("Sorry! Message with the given ID was not found");
+  messageNotFound(message, res);
   const index = messages.indexOf(message);
   messages.splice(index, 1);
   res.send(message);
